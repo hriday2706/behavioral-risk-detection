@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo Bank - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+
+        <h2>Demo Bank Login</h2>
+
+        <input type="text" id="username" placeholder="Username" /><br><br>
+        <input type="password" id="password" placeholder="Password" /><br><br>
+
+        <label>Simulate Device:</label><br>
+        <select id="deviceSelect">
+            <option value="Chrome">Chrome (Known)</option>
+            <option value="Firefox">Firefox (New)</option>
+            <option value="Bot">Bot Script</option>
+        </select><br><br>
+
+        <label>Simulate Location:</label><br>
+        <select id="locationSelect">
+            <option value="Home">Home</option>
+            <option value="Foreign">Foreign</option>
+        </select><br><br>
+
+        <label>Simulate Login Time:</label><br>
+        <select id="timeMode">
+            <option value="normal">Normal Hour</option>
+            <option value="odd">Odd Hour</option>
+        </select><br><br>
+
+        <button id="loginBtn">Login</button>
+
+        <p id="loginMessage" style="color:red;"></p>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
