@@ -6,31 +6,63 @@
 </head>
 <body>
 
-    <div class="container">
-        <h2>Welcome to Demo Bank</h2>
+<div class="app-container">
 
-        <!-- Core Banking Actions -->
-        <button id="viewBtn">View Dashboard</button>
-        <button id="downloadBtn">Download Statement</button>
-        <button id="passwordBtn">Change Password</button>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>Demo Bank</h2>
 
-        <hr>
-
-        <!-- Behavior Simulation Panel -->
-        <h3>Behavior Simulation Panel</h3>
-
-        <button id="normalModeBtn">Normal Browse Mode</button>
-        <button id="attackModeBtn">Immediate Attack Mode</button>
-        <button id="rapidActionBtn">Rapid Sensitive Actions (x3)</button>
+        <button id="viewBtn">Dashboard</button>
+        <button id="transactionsBtn">Transactions</button>
+        <button id="profileBtn">Profile</button>
+        <button id="loanBtn">Loans</button>
 
         <hr>
 
-        <!-- Risk Display -->
-        <h3>Risk Status</h3>
-        <pre id="riskDisplay">No risk calculated yet.</pre>
-
+        <button id="downloadBtn" class="sensitive">Download Statement</button>
+        <button id="passwordBtn" class="sensitive">Change Password</button>
+        <button id="transferBtn" class="sensitive">Transfer Funds</button>
     </div>
 
-    <script src="script.js"></script>
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <h1>Welcome Back</h1>
+
+        <div class="card">
+            <h3>Account Balance</h3>
+            <p>₹ 4,52,340.00</p>
+        </div>
+
+        <div class="card">
+            <h3>Recent Activity</h3>
+            <div class="card">
+                <h3>Behavior Timeline</h3>
+                <ul id="activityFeed" class="timeline"></ul>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- RISK PANEL -->
+    <div class="risk-panel">
+        <h3>Live Risk Monitor</h3>
+
+        <div id="securityAlert" style="display:none; color:white; background:red; padding:10px; border-radius:5px;">
+            ⚠ Additional Verification Required
+        </div>
+
+        <div class="risk-bar-container">
+            <div id="riskBar" class="risk-bar"></div>
+        </div>
+
+        <p id="riskText">Risk: LOW (0)</p>
+        <div id="riskReasons"></div>
+    </div>
+
+
+</div>
+
+<script type="module" src="js/dashboard.js"></script>
+
 </body>
 </html>

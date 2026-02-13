@@ -10,11 +10,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
 # -------------------------------------------------
-# NOW SAFE IMPORTS
+# SAFE IMPORTS
 # -------------------------------------------------
 from backend.event_logger import log_event, get_events
-from backend.feature_extractor import extract_features
-from ml_model.risk_engine import assess_risk
+from backend.behavioral_risk_engine import BehavioralRiskEngine
 
 # -------------------------------------------------
 # FLASK APP
@@ -22,48 +21,78 @@ from ml_model.risk_engine import assess_risk
 app = Flask(__name__)
 CORS(app)
 
-USER_PROFILE = {
-    "usual_login_hour": 10,
-    "known_devices": ["Chrome"]
-}
+# -------------------------------------------------
+# SESSION ENGINE STORE
+# -------------------------------------------------
+SESSION_ENGINES = {}
 
 @app.route("/")
 def home():
-    return "Behavior Risk Backend Running"
+    return "Behavioral Risk Engine Running"
 
-# ---------- LOG EVENT ----------
+# -------------------------------------------------
+# LOG EVENT + AUTO RISK UPDATE
+# -------------------------------------------------
 @app.route("/log-event", methods=["POST"])
 def log_user_event():
     data = request.json
 
-    log_event(
-        data["session_id"],
-        data["user_id"],
-        data["event_type"],
-        data.get("metadata", {})
-    )
-    return jsonify({"status": "event logged"})
+    session_id = data["session_id"]
+    user_id = data["user_id"]
+    event_type = data["event_type"]
+    metadata = data.get("metadata", {})
+    timestamp = data.get("timestamp")
 
-# ---------- VIEW EVENTS ----------
+    if not timestamp:
+        return jsonify({"error": "Timestamp required"}), 400
+
+    # Store raw event
+    log_event(session_id, user_id, event_type, metadata)
+
+    # Force fresh engine on login attempt
+    if event_type == "LOGIN_ATTEMPT":
+        SESSION_ENGINES[session_id] = BehavioralRiskEngine()
+
+    # Otherwise create if not exists
+    elif session_id not in SESSION_ENGINES:
+        SESSION_ENGINES[session_id] = BehavioralRiskEngine()
+
+
+    engine = SESSION_ENGINES[session_id]
+
+    # Build event object for engine
+    event_obj = {
+        "event_type": event_type,
+        "timestamp": timestamp,
+        "metadata": metadata
+    }
+
+    # Process event through risk engine
+    engine.process_event(event_obj)
+
+    # Return live risk
+    return jsonify(engine.get_risk_report())
+
+# -------------------------------------------------
+# VIEW EVENTS
+# -------------------------------------------------
 @app.route("/events/<session_id>")
 def view_events(session_id):
     return jsonify(get_events(session_id))
 
-# ---------- RISK ASSESSMENT ----------
+# -------------------------------------------------
+# OPTIONAL: VIEW CURRENT RISK WITHOUT NEW EVENT
+# -------------------------------------------------
 @app.route("/risk/<session_id>")
-def assess_session_risk(session_id):
-    events = get_events(session_id)
+def view_risk(session_id):
+    if session_id not in SESSION_ENGINES:
+        return jsonify({"error": "Session not found"})
 
-    if not events:
-        return jsonify({"error": "No events found for this session"})
+    engine = SESSION_ENGINES[session_id]
+    return jsonify(engine.get_risk_report())
 
-    features = extract_features(events, USER_PROFILE)
-    risk = assess_risk(features)
-
-    return jsonify({
-        "features": features,
-        "risk": risk
-    })
-
+# -------------------------------------------------
+# RUN APP
+# -------------------------------------------------
 if __name__ == "__main__":
     app.run(debug=True)
